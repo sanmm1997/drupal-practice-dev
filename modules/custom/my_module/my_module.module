@@ -1,0 +1,20 @@
+<?php
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implementation of hook_form_alter
+ */
+function my_module_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** 
+   * echo "<p style='background-color: red;'>".$form_id."</p>";
+   * 
+   */
+}
+
+/**
+ * Implementation of hook_form_BASE_ID_alter
+ */
+function my_module_form_comment_comment_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['actions']['submit']['#value'] = t('Comment');
+}

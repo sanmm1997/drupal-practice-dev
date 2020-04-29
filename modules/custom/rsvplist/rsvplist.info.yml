@@ -1,0 +1,7 @@
+name: RSVP List
+description: Allos userts to RSVP for events and provides a contact list for administrators
+type: module
+core: 8.x
+package: RSVP List
+version: 1.0
+configure: rsvplist.admin_settings

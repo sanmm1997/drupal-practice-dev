@@ -1,0 +1,4 @@
+name: My First Custom Module
+description: Acquia Certified Site Builder Course
+type: module
+core: 8.x
