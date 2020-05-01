@@ -6,9 +6,10 @@
 
 namespace Drupal\rsvplist\Form;
 
-use Drupal\Core\Database\Database;
 use Drupal\user\Entity\User;
+use Drupal\node\Entity\Node;
 use Drupal\Core\Form\FormBase;
+use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormStateInterface;
 
 class RSVPListForm extends FormBase {
@@ -26,8 +27,6 @@ class RSVPListForm extends FormBase {
   {
     $node = \Drupal::routeMatch()->getParameter('node');
     $nid = $node->nid->value;
-
-    kint($node, $nid);
 
     $form['mail'] = [
       '#size' => 25,
@@ -59,8 +58,27 @@ class RSVPListForm extends FormBase {
     $validator = \Drupal::service('email.validator');
 
     if ($value == !$validator->isValid($value)) {
-      $form_state->setErrorByName('mail', $this->t($validator->getError()->getMessage())  );
+      $form_state->setErrorByName('mail', $this->t($validator->getError()->getMessage()));
+      return;
     }
+
+    /**
+     * @var Node $node
+     */
+    $node = \Drupal::routeMatch()->getParameter('node');
+    /** Check if email already is set for this node */
+
+    $select = Database::getConnection()->select('rsvplist', 'r');
+    $select->fields('r', ['nid']);
+
+    $select->condition('mail', $value);
+    $select->condition('nid', $node->id());
+
+    $results = $select->execute();
+
+    if (empty($results->fetchCol())) return;
+
+    $form_state->setErrorByName('mail', t('The address %mail is already subscribed to this list', ['%mail', $value]));
   }
 
   /**

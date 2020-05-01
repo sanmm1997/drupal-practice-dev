@@ -1,0 +1,64 @@
+<?php
+/**
+ * @File
+ * Contains RSVPList Module hooks
+ */
+
+use Drupal\rsvplist\EnablerService;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter()
+ */
+function rsvplist_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $node = $form_state->getFormObject()->getEntity();
+  $node_type = $node->getType();
+
+  /** @var ImmutableConfig $config*/
+  $config = \Drupal::config('rsvplist.settings');
+  $types = $config->get('allowed_types', []);
+
+  if (!in_array($node_type, $types)) return;
+
+  $form['rsvplist'] = [
+    '#weght' => 100,
+    '#type' => 'details',
+    '#group' => 'advanced',
+    '#title' => t('RSVP Collection'),
+    '#access' => \Drupal::currentUser()->hasPermission('administer rsvplist'),
+  ];
+
+  /** @var EnablerService $enabler */
+  $enabler = \Drupal::service('rsvplist.enabler');
+
+  $form['rsvplist']['rsvplist_enabled'] = [
+    '#type' => 'checkbox',
+    '#default_value' => $enabler->isEnabled($node),
+    '#title' => t('Collect RSVP e-mail addresses for this node'),
+  ];
+
+  foreach (array_keys($form['actions']) as $action) {
+    if ($action === 'submit' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit') {
+      $form['actions'][$action]['#submit'][] = 'rsvplist_form_node_form_submit';
+    }
+  }
+}
+
+/**
+ * Form submission handdler for RSVP item field on the node form
+ * 
+ * @see rsvplist_form_node_form_alter()
+ * 
+ * @param array $form
+ * @param FormStateInterface $form_state
+ */
+function rsvplist_form_node_form_submit(array $form, FormStateInterface $form_state) {
+  /** @var EnablerService $enabler */
+  $enabler = \Drupal::service('rsvplist.enabler');
+  $node = $form_state->getFormObject()->getEntity();
+
+  ($enabled = $form_state->getValue('rsvplist_enabled')) 
+    ? $enabler->setEnabled($node)
+    : $enabler->delEnabled($node);
+}

@@ -44,7 +44,7 @@ function rsvplist_schema()
     ]
   ];
 
-  $schema[' '] = [
+  $schema['rsvplist'] = [
     'description' => 'Stores email, timestamp, nid, and uid for an rsvp',
     'fields' => $fields,
     'primary key' => ['id'],
